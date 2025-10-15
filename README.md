@@ -44,6 +44,8 @@ Sentinel is explicitly designed for **defensive testing only**:
 - **Maven 3.8+**
 - **Docker** (optional, for test lab)
 
+> **⚠️ Important**: You must build the project before using Sentinel. See the [Quick Start](#-quick-start) section below for build instructions.
+
 ## 🔧 Quick Start
 
 ### 1. Build the Project
@@ -185,6 +187,7 @@ public class MyPlugin implements ScannerPlugin {
 | Security Headers | PASSIVE | Detects missing HSTS, CSP, X-Frame-Options, etc. |
 | Information Disclosure | PASSIVE | Finds stack traces, version info, debug data |
 | Reflection Detector | PASSIVE | Identifies parameter reflection (XSS indicators) |
+| Subdomain Finder | PASSIVE | Discovers subdomains via Certificate Transparency and DNS |
 
 ## 🔒 Security & Compliance
 

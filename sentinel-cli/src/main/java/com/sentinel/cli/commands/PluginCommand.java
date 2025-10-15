@@ -38,6 +38,7 @@ public class PluginCommand implements Runnable {
             pluginManager.registerPlugin(new SecurityHeadersPlugin());
             pluginManager.registerPlugin(new InformationDisclosurePlugin());
             pluginManager.registerPlugin(new ReflectionDetectorPlugin());
+            pluginManager.registerPlugin(new SubdomainFinderPlugin());
             
             for (ScannerPlugin plugin : pluginManager.getAllPlugins()) {
                 System.out.println();

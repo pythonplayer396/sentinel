@@ -1,0 +1,36 @@
+# Subdomain Finder Plugin Configuration
+# This plugin discovers subdomains using passive techniques
+
+subdomain-finder:
+  # Maximum number of subdomains to discover
+  max-subdomains: 1000
+  
+  # Timeout for external API calls (seconds)
+  timeout-seconds: 30
+  
+  # Enable Certificate Transparency log search (crt.sh)
+  # No API key required - completely free
+  enable-crtsh: true
+  
+  # Enable DNS enumeration with common subdomain names
+  # Uses built-in wordlist of ~100 common subdomains
+  enable-dns-enum: true
+  
+  # Enable wildcard DNS detection
+  # Prevents false positives when domain uses wildcard DNS
+  enable-wildcard-detection: true
+
+# Optional: API keys for enhanced discovery (not required)
+# These are completely optional - the plugin works without them
+# 
+# api-keys:
+#   # SecurityTrails API (free tier: 50 queries/month)
+#   # Sign up at: https://securitytrails.com/
+#   securitytrails: "your-api-key-here"
+#   
+#   # VirusTotal API (free tier: 4 requests/minute)
+#   # Sign up at: https://www.virustotal.com/
+#   virustotal: "your-api-key-here"
+
+# Example usage:
+# sentinel scan --target https://example.com --config subdomain-finder.yml

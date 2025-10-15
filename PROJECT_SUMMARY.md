@@ -50,6 +50,13 @@
    - Context-aware severity (HTML, JavaScript, attribute)
    - XSS indicator detection
 
+4. **✅ Subdomain Finder Plugin** (PASSIVE)
+   - Certificate Transparency log discovery (crt.sh)
+   - DNS enumeration with common subdomains
+   - Wildcard DNS detection
+   - Subdomain takeover vulnerability detection
+   - No API keys required
+
 ### CLI Commands
 
 - **✅ `sentinel scan`** - Execute security scans

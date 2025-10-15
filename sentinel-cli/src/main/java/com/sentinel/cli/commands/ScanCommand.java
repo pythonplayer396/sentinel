@@ -12,9 +12,8 @@ import java.net.URI;
 import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 
-/**
- * CLI command to execute a scan.
- */
+
+
 @Command(
         name = "scan",
         description = "Execute a security scan on a target URL"
@@ -143,6 +142,7 @@ public class ScanCommand implements Callable<Integer> {
         pluginManager.registerPlugin(new SecurityHeadersPlugin());
         pluginManager.registerPlugin(new InformationDisclosurePlugin());
         pluginManager.registerPlugin(new ReflectionDetectorPlugin());
+        pluginManager.registerPlugin(new SubdomainFinderPlugin());
     }
     
     private void printFindingsSummary(ScanResult result) {
