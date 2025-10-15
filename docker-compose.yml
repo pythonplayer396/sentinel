@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # OWASP Juice Shop - Modern vulnerable web application
+  juiceshop:
+    image: bkimminich/juice-shop:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=unsafe
+    networks:
+      - sentinel-lab
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # OWASP WebGoat - Educational vulnerable application
+  webgoat:
+    image: webgoat/webgoat:latest
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    environment:
+      - WEBGOAT_PORT=8080
+      - WEBWOLF_PORT=9090
+    networks:
+      - sentinel-lab
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/WebGoat"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Simple vulnerable test server (for basic tests)
+  dvwa:
+    image: vulnerables/web-dvwa:latest
+    ports:
+      - "8081:80"
+    networks:
+      - sentinel-lab
+    environment:
+      - MYSQL_HOSTNAME=dvwa-db
+      - MYSQL_DATABASE=dvwa
+      - MYSQL_USERNAME=dvwa
+      - MYSQL_PASSWORD=p@ssw0rd
+    depends_on:
+      - dvwa-db
+
+  dvwa-db:
+    image: mariadb:10
+    environment:
+      - MYSQL_ROOT_PASSWORD=dvwa
+      - MYSQL_DATABASE=dvwa
+      - MYSQL_USER=dvwa
+      - MYSQL_PASSWORD=p@ssw0rd
+    networks:
+      - sentinel-lab
+    volumes:
+      - dvwa-db-data:/var/lib/mysql
+
+networks:
+  sentinel-lab:
+    driver: bridge
+
+volumes:
+  dvwa-db-data:

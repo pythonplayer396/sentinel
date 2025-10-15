@@ -1,0 +1,21 @@
+scan:
+  target: https://staging.example.com
+  maxDepth: 30
+  rateLimit: 10.0
+  safetyLevel: ACTIVE
+  respectRobotsTxt: true
+  concurrency: 4
+  expertMode: false
+
+consent:
+  file: consent.json
+
+plugins:
+  enabled:
+    - security-headers
+    - info-disclosure
+    - reflection-detector
+
+output:
+  format: json
+  file: scan-results.json

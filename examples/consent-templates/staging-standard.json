@@ -1,0 +1,22 @@
+{
+  "authorizedTargets": [
+    "https://staging.example.com",
+    "https://*.staging.example.com"
+  ],
+  "organizationName": "Example Corporation",
+  "authorizedBy": "CISO",
+  "authorizedByEmail": "ciso@example.com",
+  "validFrom": "2024-01-01T00:00:00Z",
+  "validUntil": "2024-03-31T23:59:59Z",
+  "scope": {
+    "maxSafetyLevel": "ACTIVE",
+    "allowActiveScanning": true,
+    "allowExpertMode": false,
+    "allowAuthenticatedScanning": true,
+    "allowHeadlessBrowser": true,
+    "maxRequestsPerSecond": 5,
+    "maxCrawlDepth": 20,
+    "respectRobotsTxt": true
+  },
+  "notes": "Q1 2024 staging environment security assessment"
+}

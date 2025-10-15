@@ -1,0 +1,21 @@
+{
+  "authorizedTargets": [
+    "https://example.com"
+  ],
+  "organizationName": "Example Corporation",
+  "authorizedBy": "Security Team Lead",
+  "authorizedByEmail": "security@example.com",
+  "validFrom": "2024-01-01T00:00:00Z",
+  "validUntil": "2024-01-31T23:59:59Z",
+  "scope": {
+    "maxSafetyLevel": "PASSIVE",
+    "allowActiveScanning": false,
+    "allowExpertMode": false,
+    "allowAuthenticatedScanning": false,
+    "allowHeadlessBrowser": false,
+    "maxRequestsPerSecond": 3,
+    "maxCrawlDepth": 10,
+    "respectRobotsTxt": true
+  },
+  "notes": "Production scan - passive analysis only, minimal impact"
+}

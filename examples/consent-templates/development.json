@@ -1,0 +1,23 @@
+{
+  "authorizedTargets": [
+    "http://localhost:3000",
+    "http://localhost:8080",
+    "http://127.0.0.1:*"
+  ],
+  "organizationName": "Development Environment",
+  "authorizedBy": "Developer",
+  "authorizedByEmail": "dev@localhost",
+  "validFrom": "2024-01-01T00:00:00Z",
+  "validUntil": "2025-12-31T23:59:59Z",
+  "scope": {
+    "maxSafetyLevel": "EXPERT",
+    "allowActiveScanning": true,
+    "allowExpertMode": true,
+    "allowAuthenticatedScanning": true,
+    "allowHeadlessBrowser": true,
+    "maxRequestsPerSecond": 10,
+    "maxCrawlDepth": 50,
+    "respectRobotsTxt": false
+  },
+  "notes": "Development and testing environment - unrestricted access"
+}

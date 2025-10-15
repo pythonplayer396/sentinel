@@ -1,0 +1,14 @@
+scan:
+  target: http://localhost:3000
+  maxDepth: 10
+  rateLimit: 5.0
+  safetyLevel: PASSIVE
+  respectRobotsTxt: true
+  concurrency: 2
+  expertMode: false
+
+plugins:
+  enabled:
+    - security-headers
+    - info-disclosure
+    - reflection-detector
