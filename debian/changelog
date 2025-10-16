@@ -1,0 +1,9 @@
+sentinel (1.0.0-1kali1) kali-dev; urgency=medium
+
+  * Initial release for Kali Linux
+  * Protection-first web vulnerability scanner
+  * Features consent management, plugin system, and safe scanning
+  * Includes CLI and GUI interfaces
+  * Built-in test lab with Docker Compose
+
+ -- Sentinel Team <sentinel@example.com>  Wed, 15 Oct 2025 13:40:00 -0400

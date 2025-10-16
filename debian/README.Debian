@@ -1,0 +1,84 @@
+Sentinel for Debian/Kali Linux
+==============================
+
+This package provides Sentinel, a protection-first web vulnerability scanner.
+
+Installation
+------------
+
+After installation, Sentinel is available via:
+
+1. Command line: `sentinel` or `sentinel-gui`
+2. Applications menu: Web Application Analysis → Sentinel Scanner
+
+Quick Start
+-----------
+
+1. Create a consent document for authorized scanning:
+
+   sentinel consent create \
+     --target https://example.com \
+     --org "Your Organization" \
+     --authorized-by "Your Name" \
+     --email your@email.com \
+     --file consent.json
+
+2. Run a scan:
+
+   sentinel scan \
+     --target https://example.com \
+     --consent consent.json \
+     --depth 10 \
+     --output report.json
+
+3. For localhost targets (no consent required):
+
+   sentinel scan \
+     --target http://localhost:3000 \
+     --depth 5 \
+     --safety ACTIVE
+
+Documentation
+-------------
+
+- Man page: man sentinel
+- Full documentation: /usr/share/doc/sentinel/README.md
+- Examples: /usr/share/doc/sentinel/examples/
+
+Configuration
+-------------
+
+User configuration and scan history are stored in:
+  ~/.sentinel/
+
+Test Lab
+--------
+
+For safe testing, use the included Docker Compose lab:
+
+  cd /usr/share/doc/sentinel/examples/
+  docker-compose up -d
+
+This provides:
+- OWASP Juice Shop: http://localhost:3000
+- WebGoat: http://localhost:8080/WebGoat
+- DVWA: http://localhost:8081
+
+Ethical Use
+-----------
+
+IMPORTANT: Sentinel is designed for authorized security testing only.
+
+- Use only on systems you own or have explicit permission to test
+- Always obtain and document consent before scanning
+- Respect rate limits and robots.txt
+- Report findings responsibly
+- Never use for unauthorized access or malicious purposes
+
+Support
+-------
+
+- Issues: https://github.com/yourusername/sentinel/issues
+- Documentation: https://github.com/yourusername/sentinel
+
+ -- Sentinel Team <sentinel@example.com>  Wed, 15 Oct 2025 13:40:00 -0400

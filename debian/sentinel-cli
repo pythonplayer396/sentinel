@@ -1,0 +1,21 @@
+#!/bin/bash
+# Sentinel CLI wrapper script
+
+SENTINEL_JAR="/usr/share/sentinel/sentinel-cli.jar"
+
+# Check if Java is installed
+if ! command -v java &> /dev/null; then
+    echo "Error: Java 17+ is required but not found."
+    echo "Install with: sudo apt install openjdk-17-jre"
+    exit 1
+fi
+
+# Check Java version
+JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | cut -d'.' -f1)
+if [ "$JAVA_VERSION" -lt 17 ]; then
+    echo "Error: Java 17 or higher is required. Current version: $JAVA_VERSION"
+    exit 1
+fi
+
+# Run Sentinel CLI
+exec java -jar "$SENTINEL_JAR" "$@"

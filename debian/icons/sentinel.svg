@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle with gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16213e;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#00d9ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0099cc;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="scanGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00ff88;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#00cc66;stop-opacity:0.8" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <circle cx="128" cy="128" r="120" fill="url(#bgGradient)"/>
+  
+  <!-- Shield outline -->
+  <path d="M 128 40 L 180 60 L 180 120 Q 180 180 128 210 Q 76 180 76 120 L 76 60 Z" 
+        fill="none" stroke="url(#shieldGradient)" stroke-width="4"/>
+  
+  <!-- Shield fill with transparency -->
+  <path d="M 128 45 L 175 63 L 175 120 Q 175 175 128 203 Q 81 175 81 120 L 81 63 Z" 
+        fill="url(#shieldGradient)" opacity="0.3"/>
+  
+  <!-- Scanning lines effect -->
+  <g opacity="0.9">
+    <line x1="90" y1="90" x2="166" y2="90" stroke="url(#scanGradient)" stroke-width="2"/>
+    <line x1="90" y1="110" x2="166" y2="110" stroke="url(#scanGradient)" stroke-width="2"/>
+    <line x1="90" y1="130" x2="166" y2="130" stroke="url(#scanGradient)" stroke-width="2"/>
+    <line x1="90" y1="150" x2="166" y2="150" stroke="url(#scanGradient)" stroke-width="2"/>
+  </g>
+  
+  <!-- Eye symbol (sentinel watching) -->
+  <ellipse cx="128" cy="128" rx="35" ry="25" fill="none" stroke="#00ff88" stroke-width="3"/>
+  <circle cx="128" cy="128" r="12" fill="#00ff88"/>
+  <circle cx="128" cy="128" r="6" fill="#1a1a2e"/>
+  
+  <!-- Lock symbol at bottom of shield -->
+  <g transform="translate(128, 175)">
+    <rect x="-10" y="0" width="20" height="15" rx="2" fill="#00d9ff"/>
+    <path d="M -7 0 L -7 -8 Q -7 -13 0 -13 Q 7 -13 7 -8 L 7 0" 
+          fill="none" stroke="#00d9ff" stroke-width="3"/>
+  </g>
+  
+  <!-- Corner brackets (scanner UI element) -->
+  <g stroke="#00ff88" stroke-width="2" fill="none" opacity="0.6">
+    <path d="M 60 60 L 50 60 L 50 70"/>
+    <path d="M 196 60 L 206 60 L 206 70"/>
+    <path d="M 60 196 L 50 196 L 50 186"/>
+    <path d="M 196 196 L 206 196 L 206 186"/>
+  </g>
+</svg>

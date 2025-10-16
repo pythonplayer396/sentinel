@@ -1,0 +1,28 @@
+Source: sentinel
+Section: utils
+Priority: optional
+Maintainer: Sentinel Team <sentinel@example.com>
+Build-Depends: debhelper (>= 11), maven, openjdk-17-jdk
+Standards-Version: 4.5.0
+Homepage: https://github.com/yourusername/sentinel
+
+Package: sentinel
+Architecture: all
+Depends: ${misc:Depends}, openjdk-17-jre | openjdk-17-jdk, default-jre-headless | java17-runtime-headless
+Description: Protection-first web vulnerability scanner
+ Sentinel is an enterprise-grade, protection-first web vulnerability 
+ scanner built in Java. Designed for defensive security testing, Sentinel 
+ provides safe, non-destructive vulnerability detection with mandatory 
+ consent workflows, low false positives, and enterprise bulk-scan capabilities.
+ .
+ Features:
+  - GUI (JavaFX) + Headless CLI with full feature parity
+  - Fast crawler respecting robots.txt
+  - Passive fingerprinting (server, framework, CMS detection)
+  - Plugin engine with modular JAR-based plugins
+  - Safe detection without exploitation
+  - Authenticated scans with form-based, cookie/session, token support
+  - Bulk scanning with queue management
+  - Scan templates and scheduled scans
+  - Webhooks & alerts (Slack, email, SIEM integration)
+  - Comprehensive reporting (JSON, HTML, PDF)

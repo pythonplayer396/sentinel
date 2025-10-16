@@ -1,0 +1,28 @@
+#!/bin/bash
+# Sentinel GUI wrapper script
+
+SENTINEL_GUI_JAR="/usr/share/sentinel/sentinel-gui.jar"
+
+# Check if Java is installed
+if ! command -v java &> /dev/null; then
+    echo "Error: Java 17+ with JavaFX is required but not found."
+    echo "Install with: sudo apt install openjdk-17-jre openjfx"
+    exit 1
+fi
+
+# Check Java version
+JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | cut -d'.' -f1)
+if [ "$JAVA_VERSION" -lt 17 ]; then
+    echo "Error: Java 17 or higher is required. Current version: $JAVA_VERSION"
+    exit 1
+fi
+
+# Check if GUI JAR exists
+if [ ! -f "$SENTINEL_GUI_JAR" ]; then
+    echo "Error: Sentinel GUI is not yet available."
+    echo "Use 'sentinel' command for CLI interface."
+    exit 1
+fi
+
+# Run Sentinel GUI
+exec java -jar "$SENTINEL_GUI_JAR" "$@"

@@ -1,0 +1,110 @@
+.TH SENTINEL 1 "October 2025" "Sentinel 1.0.0" "User Commands"
+.SH NAME
+sentinel \- Protection-first web vulnerability scanner
+.SH SYNOPSIS
+.B sentinel
+[\fIcommand\fR] [\fIoptions\fR]
+.SH DESCRIPTION
+.B Sentinel
+is an enterprise-grade, protection-first web vulnerability scanner built in Java. 
+Designed for defensive security testing, Sentinel provides safe, non-destructive 
+vulnerability detection with mandatory consent workflows, low false positives, 
+and enterprise bulk-scan capabilities.
+.SH COMMANDS
+.TP
+.B scan
+Perform a vulnerability scan on a target URL
+.TP
+.B consent create
+Create a consent document for authorized scanning
+.TP
+.B consent validate
+Validate an existing consent document
+.TP
+.B plugin list
+List all available scanner plugins
+.SH SCAN OPTIONS
+.TP
+.B \-\-target \fIURL\fR
+Target URL to scan (required)
+.TP
+.B \-\-consent \fIFILE\fR
+Path to consent document (required for non-localhost targets)
+.TP
+.B \-\-depth \fIN\fR
+Maximum crawl depth (default: 10)
+.TP
+.B \-\-rate \fIRATE\fR
+Request rate limit per second (default: 5.0)
+.TP
+.B \-\-safety \fILEVEL\fR
+Safety level: PASSIVE, ACTIVE, or EXPERT (default: PASSIVE)
+.TP
+.B \-\-output \fIFILE\fR
+Output report file path
+.SH CONSENT OPTIONS
+.TP
+.B \-\-target \fIURL\fR
+Target URL for consent authorization
+.TP
+.B \-\-org \fINAME\fR
+Organization name
+.TP
+.B \-\-authorized-by \fINAME\fR
+Name of person authorizing the scan
+.TP
+.B \-\-email \fIEMAIL\fR
+Contact email address
+.TP
+.B \-\-days \fIN\fR
+Validity period in days (default: 30)
+.TP
+.B \-\-scope \fISCOPE\fR
+Scan scope: standard, subdomain, or wildcard
+.TP
+.B \-\-file \fIFILE\fR
+Output file for consent document
+.SH EXAMPLES
+.TP
+Create a consent document:
+.B sentinel consent create \-\-target https://example.com \-\-org "My Company" \-\-authorized-by "John Doe" \-\-email john@example.com \-\-file consent.json
+.TP
+Scan a website with consent:
+.B sentinel scan \-\-target https://example.com \-\-consent consent.json \-\-depth 20 \-\-output report.json
+.TP
+Scan localhost (no consent required):
+.B sentinel scan \-\-target http://localhost:3000 \-\-depth 5 \-\-safety ACTIVE
+.TP
+List available plugins:
+.B sentinel plugin list
+.SH FILES
+.TP
+.I /usr/share/sentinel/
+Installation directory containing JAR files
+.TP
+.I /usr/share/doc/sentinel/
+Documentation and examples
+.TP
+.I ~/.sentinel/
+User configuration and scan history
+.SH SECURITY
+.B IMPORTANT:
+Sentinel is designed for authorized security testing only.
+.PP
+- Use only on systems you own or have explicit permission to test
+.br
+- Always obtain and document consent before scanning
+.br
+- Respect rate limits and robots.txt
+.br
+- Report findings responsibly
+.br
+- Never use for unauthorized access or malicious purposes
+.SH SEE ALSO
+.BR nmap (1),
+.BR nikto (1),
+.BR burpsuite (1)
+.SH AUTHOR
+Sentinel Team <sentinel@example.com>
+.SH BUGS
+Report bugs at: https://github.com/yourusername/sentinel/issues

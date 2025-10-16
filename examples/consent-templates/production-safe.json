@@ -19,3 +19,14 @@
   },
   "notes": "Production scan - passive analysis only, minimal impact"
 }
+
+
+
+ This consent template is intended for production scans that are more
+# passive and have minimal impact on the target application. It is
+# suitable for high-profile targets where the security team wishes to
+# minimize the impact of the scan.
+#
+# The security team should review the scope and notes of this template
+# to ensure it aligns with their organization's security policy.
+

@@ -1,0 +1,48 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	mvn clean package -DskipTests
+
+override_dh_auto_install:
+	# Create directory structure
+	mkdir -p debian/sentinel/usr/share/sentinel
+	mkdir -p debian/sentinel/usr/bin
+	mkdir -p debian/sentinel/usr/share/applications
+	mkdir -p debian/sentinel/usr/share/icons/hicolor/scalable/apps
+	mkdir -p debian/sentinel/usr/share/icons/hicolor/256x256/apps
+	mkdir -p debian/sentinel/usr/share/pixmaps
+	mkdir -p debian/sentinel/usr/share/doc/sentinel
+	mkdir -p debian/sentinel/usr/share/man/man1
+	
+	# Install JAR files
+	cp sentinel-cli/target/sentinel-cli-*-shaded.jar debian/sentinel/usr/share/sentinel/sentinel-cli.jar
+	
+	# Install wrapper scripts
+	cp debian/sentinel-cli debian/sentinel/usr/bin/sentinel
+	cp debian/sentinel-gui debian/sentinel/usr/bin/sentinel-gui
+	chmod +x debian/sentinel/usr/bin/sentinel
+	chmod +x debian/sentinel/usr/bin/sentinel-gui
+	
+	# Install desktop file and icons
+	cp debian/sentinel.desktop debian/sentinel/usr/share/applications/
+	cp debian/icons/sentinel.svg debian/sentinel/usr/share/icons/hicolor/scalable/apps/
+	cp debian/icons/sentinel-256.png debian/sentinel/usr/share/icons/hicolor/256x256/apps/sentinel.png
+	cp debian/icons/sentinel-256.png debian/sentinel/usr/share/pixmaps/sentinel.png
+	
+	# Install documentation
+	cp README.md debian/sentinel/usr/share/doc/sentinel/
+	cp -r docs/* debian/sentinel/usr/share/doc/sentinel/ 2>/dev/null || true
+	cp -r examples debian/sentinel/usr/share/doc/sentinel/ 2>/dev/null || true
+	
+	# Install man page
+	cp debian/sentinel.1 debian/sentinel/usr/share/man/man1/ 2>/dev/null || true
+
+override_dh_auto_clean:
+	mvn clean || true
+	dh_clean
+
+override_dh_auto_test:
+	# Skip tests during package build

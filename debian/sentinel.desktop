@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Sentinel Scanner
+GenericName=Web Vulnerability Scanner
+Comment=Protection-first web vulnerability scanner with consent management
+Exec=sentinel-gui
+Icon=sentinel
+Terminal=false
+Type=Application
+Categories=Application;Security;Network;
+Keywords=security;scanner;vulnerability;web;penetration;testing;
+StartupNotify=true
+StartupWMClass=Sentinel
