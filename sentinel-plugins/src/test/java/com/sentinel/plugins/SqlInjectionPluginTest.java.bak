@@ -1,0 +1,584 @@
+package com.sentinel.plugins;
+
+import com.sentinel.plugin.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
+
+import java.net.URI;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
+/**
+ * Comprehensive tests for SQL Injection Detection Plugin
+ */
+class SqlInjectionPluginTest {
+    
+    private SqlInjectionPlugin plugin;
+    
+    @BeforeEach
+    void setUp() {
+        plugin = new SqlInjectionPlugin();
+        plugin.initialize();
+    }
+    
+    @Test
+    @DisplayName("Plugin metadata should be correctly configured")
+    void testMetadata() {
+        PluginMetadata metadata = plugin.getMetadata();
+        
+        assertEquals("sql-injection", metadata.getId());
+        assertEquals("SQL Injection Detector", metadata.getName());
+        assertEquals("1.0.0", metadata.getVersion());
+        assertEquals(SafetyLevel.ACTIVE, metadata.getSafetyLevel());
+        assertNotNull(metadata.getDescription());
+    }
+    
+    @Test
+    @DisplayName("Should detect MySQL error messages")
+    void testDetectMySqlError() throws PluginExecutionException {
+        String responseBody = "You have an error in your SQL syntax; check the manual that " +
+                             "corresponds to your MySQL server version for the right syntax to use";
+        
+        PluginContext context = createMockContext(
+            "http://example.com/user?id=1'",
+            200,
+            responseBody,
+            Collections.singletonMap("id", "1'")
+        );
+        
+        List<PluginFinding> findings = plugin.run(context);
+        
+        assertFalse(findings.isEmpty(), "Should detect MySQL error");
+        PluginFinding finding = findings.get(0);
+        assertTrue(finding.getTitle().contains("MySQL"));
+        assertTrue(finding.getSeverity().ordinal() >= Severity.MEDIUM.ordinal());
+    }
+    
+    @Test
+    @DisplayName("Should detect PostgreSQL error messages")
+    void testDetectPostgreSqlError() throws PluginExecutionException {
+        String responseBody = "ERROR: syntax error at or near \"'\" at character 45\n" +
+                             "org.postgresql.util.PSQLException: ERROR: syntax error";
+        
+        PluginContext context = createMockContext(
+            "http://example.com/search?q=test'",
+            500,
+            responseBody,
+            Collections.singletonMap("q", "test'")
+        );
+        
+        List<PluginFinding> findings = plugin.run(context);
+        
+        assertFalse(findings.isEmpty(), "Should detect PostgreSQL error");
+        assertTrue(findings.stream().anyMatch(f -> f.getTitle().contains("PostgreSQL")));
+    }
+    
+    @Test
+    @DisplayName("Should detect Microsoft SQL Server errors")
+    void testDetectMsSqlError() throws PluginExecutionException {
+        String responseBody = "Microsoft SQL Server Error: Incorrect syntax near ')'. " +
+                             "SqlException at System.Data.SqlClient.SqlConnection";
+        
+        PluginContext context = createMockContext(
+            "http://example.com/api/data?filter=admin",
+            500,
+            responseBody,
+            Collections.singletonMap("filter", "admin")
+        );
+        
+        List<PluginFinding> findings = plugin.run(context);
+        
+        assertFalse(findings.isEmpty(), "Should detect MSSQL error");
+        assertTrue(findings.stream().anyMatch(f -> f.getTitle().contains("MSSQL")));
+    }
+    
+    @Test
+    @DisplayName("Should detect Oracle database errors")
+    void testDetectOracleError() throws PluginExecutionException {
+        String responseBody = "ORA-00933: SQL command not properly ended\n" +
+                             "oracle.jdbc.driver.T4CPreparedStatement.executeForRows";
+        
+        PluginContext context = createMockContext(
+            "http://example.com/report?id=100",
+            500,
+            responseBody,
+            Collections.singletonMap("id", "100")
+        );
+        
+        List<PluginFinding> findings = plugin.run(context);
+        
+        assertFalse(findings.isEmpty(), "Should detect Oracle error");
+        assertTrue(findings.stream().anyMatch(f -> f.getTitle().contains("Oracle")));
+    }
+    
+    @Test
+    @DisplayName("Should detect SQLite errors")
+    void testDetectSqliteError() throws PluginExecutionException {
+        String responseBody = "SQLite3::SQLException: near \")\": syntax error\n" +
+                             "System.Data.SQLite.SQLiteException";
+        
+        PluginContext context = createMockContext(
+            "http://example.com/items?category=books",
+            500,
+            responseBody,
+            Collections.singletonMap("category", "books")
+        );
+        
+        List<PluginFinding> findings = plugin.run(context);
+        
+        assertFalse(findings.isEmpty(), "Should detect SQLite error");
+        assertTrue(findings.stream().anyMatch(f -> f.getTitle().contains("SQLite")));
+    }
+    
+    @Test
+    @DisplayName("Should detect SQL injection patterns in parameters")
+    void testDetectInjectionPatterns() throws PluginExecutionException {
+        Map<String, String> params = new HashMap<>();
+        params.put("id", "1' OR '1'='1");
+        params.put("name", "admin");
+        
+        String responseBody = "User found: admin OR 1=1";
+        
+        PluginContext context = createMockContext(
+            "http://example.com/login",
+            200,
+            responseBody,
+            params
+        );
+        
+        List<PluginFinding> findings = plugin.run(context);
+        
+        assertFalse(findings.isEmpty(), "Should detect injection pattern");
+        assertTrue(findings.stream().anyMatch(f -> 
+            f.getTitle().contains("Pattern Reflection") && f.getParameter().equals("id")
+        ));
+    }
+    
+    @Test
+    @DisplayName("Should detect UNION-based injection patterns")
+    void testDetectUnionInjection() throws PluginExecutionException {
+        Map<String, String> params = new HashMap<>();
+        params.put("id", "1 UNION SELECT username,password FROM users--");
+        
+        String responseBody = "Results: UNION SELECT username password";
+        
+        PluginContext context = createMockContext(
+            "http://example.com/product",
+            200,
+            responseBody,
+            params
+        );
+        
+        List<PluginFinding> findings = plugin.run(context);
+        
+        assertFalse(findings.isEmpty(), "Should detect UNION injection");
+    }
+    
+    @Test
+    @DisplayName("Should detect time-based blind SQL injection indicators")
+    void testDetectTimeBasedInjection() throws PluginExecutionException {
+        Map<String, String> params = new HashMap<>();
+        params.put("id", "1; WAITFOR DELAY '00:00:05'--");
+        
+        PluginContext context = createMockContextWithTiming(
+            "http://example.com/user",
+            200,
+            "User data",
+            params,
+            6000L // 6 seconds response time
+        );
+        
+        List<PluginFinding> findings = plugin.run(context);
+        
+        assertTrue(findings.stream().anyMatch(f -> 
+            f.getTitle().contains("Time-Based") && f.getSeverity() == Severity.HIGH
+        ), "Should detect time-based injection");
+    }
+    
+    @Test
+    @DisplayName("Should detect boolean-based blind SQL injection")
+    void testDetectBooleanInjection() throws PluginExecutionException {
+        Map<String, String> params = new HashMap<>();
+        params.put("id", "1 AND 1=1");
+        
+        PluginContext context = createMockContext(
+            "http://example.com/article",
+            200,
+            "Article content here",
+            params
+        );
+        
+        List<PluginFinding> findings = plugin.run(context);
+        
+        assertTrue(findings.stream().anyMatch(f -> 
+            f.getTitle().contains("Boolean-Based")
+        ), "Should detect boolean-based injection");
+    }
+    
+    @Test
+    @DisplayName("Should fingerprint database technology")
+    void testDatabaseFingerprinting() throws PluginExecutionException {
+        String responseBody = "<?php mysql_connect('localhost', 'user', 'pass'); ?>";
+        
+        PluginContext context = createMockContext(
+            "http://example.com/config.php",
+            200,
+            responseBody,
+            Collections.emptyMap()
+        );
+        
+        List<PluginFinding> findings = plugin.run(context);
+        
+        assertTrue(findings.stream().anyMatch(f -> 
+            f.getTitle().contains("Database Technology Fingerprinted") &&
+            f.getSeverity() == Severity.INFO
+        ), "Should fingerprint MySQL");
+    }
+    
+    @Test
+    @DisplayName("Should assign CRITICAL severity for admin endpoints")
+    void testCriticalSeverityForAdminEndpoints() throws PluginExecutionException {
+        String responseBody = "MySQL error: You have an error in your SQL syntax";
+        
+        PluginContext context = createMockContext(
+            "http://example.com/admin/users?id=1'",
+            500,
+            responseBody,
+            Collections.singletonMap("id", "1'")
+        );
+        
+        List<PluginFinding> findings = plugin.run(context);
+        
+        assertTrue(findings.stream().anyMatch(f -> 
+            f.getSeverity() == Severity.CRITICAL
+        ), "Should assign CRITICAL severity for admin endpoints");
+    }
+    
+    @Test
+    @DisplayName("Should not produce false positives on normal responses")
+    void testNoFalsePositives() throws PluginExecutionException {
+        String responseBody = "Welcome to our website! Here you can select from various products.";
+        
+        PluginContext context = createMockContext(
+            "http://example.com/home",
+            200,
+            responseBody,
+            Collections.singletonMap("page", "home")
+        );
+        
+        List<PluginFinding> findings = plugin.run(context);
+        
+        // Should not detect SQL injection in normal content
+        assertTrue(findings.isEmpty() || 
+                  findings.stream().noneMatch(f -> f.getSeverity().ordinal() >= Severity.MEDIUM.ordinal()),
+                  "Should not produce false positives on normal content");
+    }
+    
+    @Test
+    @DisplayName("Should handle empty response body gracefully")
+    void testEmptyResponseBody() throws PluginExecutionException {
+        PluginContext context = createMockContext(
+            "http://example.com/api",
+            204,
+            "",
+            Collections.emptyMap()
+        );
+        
+        assertDoesNotThrow(() -> plugin.run(context), 
+            "Should handle empty response without errors");
+    }
+    
+    @Test
+    @DisplayName("Should handle null response body gracefully")
+    void testNullResponseBody() throws PluginExecutionException {
+        PluginContext context = createMockContext(
+            "http://example.com/api",
+            200,
+            null,
+            Collections.emptyMap()
+        );
+        
+        assertDoesNotThrow(() -> plugin.run(context), 
+            "Should handle null response without errors");
+    }
+    
+    @Test
+    @DisplayName("Should deduplicate findings")
+    void testDeduplication() throws PluginExecutionException {
+        // Response with multiple error patterns
+        String responseBody = "MySQL error: You have an error in your SQL syntax. " +
+                             "MySQL server version. MySQL error occurred.";
+        
+        PluginContext context = createMockContext(
+            "http://example.com/test",
+            500,
+            responseBody,
+            Collections.emptyMap()
+        );
+        
+        List<PluginFinding> findings = plugin.run(context);
+        
+        // Should not have duplicate findings for the same endpoint/type
+        Set<String> uniqueKeys = new HashSet<>();
+        for (PluginFinding finding : findings) {
+            String key = finding.getEndpoint() + "|" + finding.getTitle();
+            assertFalse(uniqueKeys.contains(key), 
+                "Should not have duplicate findings: " + key);
+            uniqueKeys.add(key);
+        }
+    }
+    
+    @Test
+    @DisplayName("Should include remediation advice")
+    void testRemediationAdvice() throws PluginExecutionException {
+        String responseBody = "MySQL error: SQL syntax error";
+        
+        PluginContext context = createMockContext(
+            "http://example.com/test",
+            500,
+            responseBody,
+            Collections.emptyMap()
+        );
+        
+        List<PluginFinding> findings = plugin.run(context);
+        
+        assertFalse(findings.isEmpty());
+        PluginFinding finding = findings.get(0);
+        assertNotNull(finding.getRemediation(), "Should include remediation");
+        assertTrue(finding.getRemediation().contains("parameterized"), 
+            "Should recommend parameterized queries");
+    }
+    
+    @Test
+    @DisplayName("Should collect evidence for findings")
+    void testEvidenceCollection() throws PluginExecutionException {
+        String responseBody = "PostgreSQL ERROR: syntax error at or near";
+        
+        PluginContext context = createMockContext(
+            "http://example.com/test",
+            500,
+            responseBody,
+            Collections.emptyMap()
+        );
+        
+        List<PluginFinding> findings = plugin.run(context);
+        
+        assertFalse(findings.isEmpty());
+        PluginFinding finding = findings.get(0);
+        assertFalse(finding.getEvidence().isEmpty(), "Should collect evidence");
+    }
+    
+    @Test
+    @DisplayName("Should respect safety level for active checks")
+    void testSafetyLevelRespect() throws PluginExecutionException {
+        Map<String, String> params = new HashMap<>();
+        params.put("id", "1; WAITFOR DELAY '00:00:05'--");
+        
+        // Create context with PASSIVE safety level
+        PluginContext passiveContext = createMockContextWithSafety(
+            "http://example.com/test",
+            200,
+            "Response",
+            params,
+            SafetyLevel.PASSIVE
+        );
+        
+        List<PluginFinding> passiveFindings = plugin.run(passiveContext);
+        
+        // Create context with ACTIVE safety level
+        PluginContext activeContext = createMockContextWithSafety(
+            "http://example.com/test",
+            200,
+            "Response",
+            params,
+            SafetyLevel.ACTIVE
+        );
+        
+        List<PluginFinding> activeFindings = plugin.run(activeContext);
+        
+        // Active mode should potentially find more (timing checks)
+        assertTrue(activeFindings.size() >= passiveFindings.size(),
+            "Active mode should perform additional checks");
+    }
+    
+    // Helper methods to create mock contexts
+    
+    private PluginContext createMockContext(String url, int statusCode, 
+                                           String body, Map<String, String> params) {
+        return new MockPluginContext(url, statusCode, body, params, 100L, SafetyLevel.ACTIVE);
+    }
+    
+    private PluginContext createMockContextWithTiming(String url, int statusCode, 
+                                                     String body, Map<String, String> params,
+                                                     long responseTime) {
+        return new MockPluginContext(url, statusCode, body, params, responseTime, SafetyLevel.ACTIVE);
+    }
+    
+    private PluginContext createMockContextWithSafety(String url, int statusCode, 
+                                                     String body, Map<String, String> params,
+                                                     SafetyLevel safetyLevel) {
+        return new MockPluginContext(url, statusCode, body, params, 100L, safetyLevel);
+    }
+    
+    // Mock implementation of PluginContext for testing
+    private static class MockPluginContext implements PluginContext {
+        private final URI targetUrl;
+        private final HttpResponse response;
+        private final HttpRequest request;
+        private final Map<String, String> parameters;
+        private final ScanConfig scanConfig;
+        private final PluginLogger logger;
+        
+        public MockPluginContext(String url, int statusCode, String body, 
+                                Map<String, String> params, long responseTime,
+                                SafetyLevel safetyLevel) {
+            try {
+                this.targetUrl = new URI(url);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            this.parameters = params;
+            this.response = new MockHttpResponse(statusCode, body, responseTime);
+            this.request = new MockHttpRequest(url);
+            this.scanConfig = new MockScanConfig(safetyLevel);
+            this.logger = new MockPluginLogger();
+        }
+        
+        @Override
+        public URI getTargetUrl() { return targetUrl; }
+        
+        @Override
+        public HttpRequest getRequest() { return request; }
+        
+        @Override
+        public HttpResponse getResponse() { return response; }
+        
+        @Override
+        public Optional<String> getParameterValue(String name) {
+            return Optional.ofNullable(parameters.get(name));
+        }
+        
+        @Override
+        public Map<String, String> getAllParameters() { return parameters; }
+        
+        @Override
+        public int getCrawlDepth() { return 1; }
+        
+        @Override
+        public boolean isJavaScriptAvailable() { return false; }
+        
+        @Override
+        public boolean isAuthenticated() { return false; }
+        
+        @Override
+        public ScanConfig getScanConfig() { return scanConfig; }
+        
+        @Override
+        public PluginLogger getLogger() { return logger; }
+    }
+    
+    private static class MockHttpResponse implements HttpResponse {
+        private final int statusCode;
+        private final String body;
+        private final long responseTime;
+        
+        public MockHttpResponse(int statusCode, String body, long responseTime) {
+            this.statusCode = statusCode;
+            this.body = body;
+            this.responseTime = responseTime;
+        }
+        
+        @Override
+        public int getStatusCode() { return statusCode; }
+        
+        @Override
+        public String getBody() { return body; }
+        
+        @Override
+        public String getBodyTruncated(int maxLength) {
+            if (body == null) return null;
+            return body.length() > maxLength ? body.substring(0, maxLength) : body;
+        }
+        
+        @Override
+        public Optional<String> getHeader(String name) { return Optional.empty(); }
+        
+        @Override
+        public Map<String, List<String>> getHeaders() { return Collections.emptyMap(); }
+        
+        @Override
+        public Optional<String> getContentType() { return Optional.of("text/html"); }
+        
+        @Override
+        public boolean isSuccessful() { return statusCode >= 200 && statusCode < 300; }
+        
+        @Override
+        public long getResponseTimeMs() { return responseTime; }
+    }
+    
+    private static class MockHttpRequest implements HttpRequest {
+        private final String url;
+        
+        public MockHttpRequest(String url) {
+            this.url = url;
+        }
+        
+        @Override
+        public String getMethod() { return "GET"; }
+        
+        @Override
+        public boolean isSecure() { return url.startsWith("https"); }
+    }
+    
+    private static class MockScanConfig implements ScanConfig {
+        private final SafetyLevel safetyLevel;
+        
+        public MockScanConfig(SafetyLevel safetyLevel) {
+            this.safetyLevel = safetyLevel;
+        }
+        
+        @Override
+        public SafetyLevel getMaxSafetyLevel() { return safetyLevel; }
+        
+        @Override
+        public boolean isExpertModeEnabled() { return false; }
+        
+        @Override
+        public int getMaxCrawlDepth() { return 10; }
+        
+        @Override
+        public double getRateLimit() { return 5.0; }
+        
+        @Override
+        public boolean hasValidConsent() { return true; }
+        
+        @Override
+        public String getScanId() { return "test-scan-123"; }
+        
+        @Override
+        public boolean isDryRun() { return false; }
+    }
+    
+    private static class MockPluginLogger implements PluginLogger {
+        @Override
+        public void debug(String message, Object... args) {}
+        
+        @Override
+        public void info(String message, Object... args) {}
+        
+        @Override
+        public void warn(String message, Object... args) {}
+        
+        @Override
+        public void error(String message, Object... args) {}
+        
+        @Override
+        public void error(String message, Throwable throwable) {}
+    }
+}

@@ -1,0 +1,5 @@
+com.sentinel.plugins.SecurityHeadersPlugin
+com.sentinel.plugins.InformationDisclosurePlugin
+com.sentinel.plugins.ReflectionDetectorPlugin
+com.sentinel.plugins.SubdomainFinderPlugin
+com.sentinel.plugins.SqlInjectionPlugin

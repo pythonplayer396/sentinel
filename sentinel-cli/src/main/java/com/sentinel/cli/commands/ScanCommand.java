@@ -143,6 +143,7 @@ public class ScanCommand implements Callable<Integer> {
         pluginManager.registerPlugin(new InformationDisclosurePlugin());
         pluginManager.registerPlugin(new ReflectionDetectorPlugin());
         pluginManager.registerPlugin(new SubdomainFinderPlugin());
+        pluginManager.registerPlugin(new SqlInjectionPlugin());
     }
     
     private void printFindingsSummary(ScanResult result) {

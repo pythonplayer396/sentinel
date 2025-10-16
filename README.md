@@ -188,6 +188,7 @@ public class MyPlugin implements ScannerPlugin {
 | Information Disclosure | PASSIVE | Finds stack traces, version info, debug data |
 | Reflection Detector | PASSIVE | Identifies parameter reflection (XSS indicators) |
 | Subdomain Finder | PASSIVE | Discovers subdomains via Certificate Transparency and DNS |
+| **SQL Injection** | **ACTIVE** | **Detects SQL injection via error analysis, timing attacks, and pattern matching (20+ databases)** |
 
 ## 🔒 Security & Compliance
 

@@ -57,6 +57,15 @@
    - Subdomain takeover vulnerability detection
    - No API keys required
 
+5. **✅ SQL Injection Plugin** (ACTIVE)
+   - Error-based detection for 20+ database types
+   - Time-based blind SQL injection detection
+   - Boolean-based blind injection detection
+   - Database fingerprinting
+   - Context-aware severity scoring
+   - Pattern-based attack detection
+   - Comprehensive remediation guidance
+
 ### CLI Commands
 
 - **✅ `sentinel scan`** - Execute security scans
